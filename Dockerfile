@@ -1,7 +1,7 @@
 FROM debian:latest
 
 RUN apt-get -y update && \
-    apt-get -y install lighttpd nut-cgi
+    apt-get -y install lighttpd nut-cgi curl
 
 RUN apt-get -y autoremove && \
     apt-get clean all && \
@@ -15,6 +15,9 @@ RUN sed -i 's|/cgi-bin/|/|g' /etc/lighttpd/conf-enabled/*-cgi.conf && \
     sed -i 's|^\(server.document-root.*=\).*|\1 "/usr/lib/cgi-bin/nut"|g' /etc/lighttpd/lighttpd.conf && \
     sed -i 's|^\(index-file.names.*=\).*|\1 ( "upsstats.cgi" )|g' /etc/lighttpd/lighttpd.conf && \
     sed -i '/alias.url/d' /etc/lighttpd/conf-enabled/*-cgi.conf
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost/ || exit 1
 
 EXPOSE 80
 
